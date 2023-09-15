@@ -5,18 +5,16 @@ const expectChai = require('chai');
 Given(/^I opened the App$/, async () => {
 
   console.log("Loyalty app is opened.");
-  browser.reset();
+  // browser.reset();
 });
 
 
 When(/^I click on Get Started Button$/, async () => {
-
   await WelcomeScreen.clickOnGetStartedBtn();
 });
 
 
 When(/^I select the language$/, async () => {
-
   await WelcomeScreen.clickOnSelectLang();
 });
 

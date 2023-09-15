@@ -1,7 +1,11 @@
+require('dotenv').config({ path: `${process.cwd()}/env/.env` });
+const Integration = require('./api-Integration');
 var allureReporter = require('@wdio/allure-reporter');
 var cucumberJson = require('wdio-cucumberjs-json-reporter');
 var path = require('path');
-
+const {remote} = require("webdriverio");
+const setenv=process.env.ENV
+let data = {id:0}
 let allure_config = {
   outputDir: 'allure-results',
   disableWebdriverStepsReporting: true,
@@ -11,141 +15,36 @@ let allure_config = {
 };
 
 exports.config = {
-  //
-  // ====================
-  // Runner Configuration
-  // ====================
-  //
-  //
-  // ==================
-  // Specify Test Files
-  // ==================
-  // Define which test specs should run. The pattern is relative to the directory
-  // from which `wdio` was called.
-  //
-  // The specs are defined as an array of spec files (optionally using wildcards
-  // that will be expanded). The test for each spec file will be run in a separate
-  // worker process. In order to have a group of spec files run in the same worker
-  // process simply enclose them in an array within the specs array.
-  //
-  // If you are calling `wdio` from an NPM script (see https://docs.npmjs.com/cli/run-script),
-  // then the current working directory is where your `package.json` resides, so `wdio`
-  // will be called from there.
-  //
   specs: ["./features/*.feature"],
-  // Patterns to exclude.
   exclude: [
-    // 'path/to/excluded/files'
   ],
-  // ============
-  // Capabilities
-  // ============
   maxInstances: 1,
   capabilities: [
     {
-        // The defaults you need to have in your config
-        platformName: 'Android',
-        maxInstances: 1,
-        // For W3C the appium capabilities need to have an extension prefix
-        // http://appium.io/docs/en/writing-running-appium/caps/
-        // This is `appium:` for all Appium Capabilities which can be found here
-        'appium:deviceName': 'POCO X3 NFC',
-        'appium:platformVersion': '13.0',
-        'appium:orientation': 'PORTRAIT',
-        'appium:automationName': 'UiAutomator2',
-        // The path to the app
-        'appium:app': path.join(process.cwd(), './apps/dev-silk2.apk'),
-        // @ts-ignore
-        // 'appium:appWaitActivity': 'com.wdiodemoapp.MainActivity',
-        'appium:newCommandTimeout': 240,
-        'appium:noReset': false
+      platformName: 'Android',
+      maxInstances: 1,
+      'appium:deviceName': 'POCO X3 NFC',
+      'appium:platformVersion': '12',
+      'appium:orientation': 'PORTRAIT',
+      'appium:automationName': 'UiAutomator2',
+      'appium:app': path.join(process.cwd(), './apps/dev-silk2.apk'),
+      'appium:newCommandTimeout': 240,
+      'appium:noReset': false
     },
-],
-  //
-  // ===================
-  // Test Configurations
-  // ===================
-  // Define all options that are relevant for the WebdriverIO instance here
-  //
-  // Level of logging verbosity: trace | debug | info | warn | error | silent
+  ],
   logLevel: "debug",
-  //
-  // Set specific log levels per logger
-  // loggers:
-  // - webdriver, webdriverio
-  // - @wdio/browserstack-service, @wdio/devtools-service, @wdio/sauce-service
-  // - @wdio/mocha-framework, @wdio/jasmine-framework
-  // - @wdio/local-runner
-  // - @wdio/sumologic-reporter
-  // - @wdio/cli, @wdio/config, @wdio/utils
-  // Level of logging verbosity: trace | debug | info | warn | error | silent
-  // logLevels: {
-  //     webdriver: 'info',
-  //     '@wdio/appium-service': 'info'
-  // },
-  //
-  // If you only want to run your tests until a specific amount of tests have failed use
-  // bail (default is 0 - don't bail, run all tests).
   bail: 0,
-  //
-  // Set a base URL in order to shorten url command calls. If your `url` parameter starts
-  // with `/`, the base url gets prepended, not including the path portion of your baseUrl.
-  // If your `url` parameter starts without a scheme or `/` (like `some/path`), the base url
-  // gets prepended directly.
   baseUrl: "http://localhost",
-  //
-  // Default timeout for all waitFor* commands.
   waitforTimeout: 20000,
-  //
-  // Default timeout in milliseconds for request
-  // if browser driver or grid doesn't send response
   connectionRetryTimeout: 120000,
-  //
-  // Default request retries count
   connectionRetryCount: 3,
-  //
-  // Test runner services
-  // Services take over a specific job you don't want to take care of. They enhance
-  // your test setup with almost no effort. Unlike plugins, they don't add new
-  // commands. Instead, they hook themselves up into the test process.
-  // services: ["chromedriver"],
   services: [],
   hostname: process.env.HOST_NAME || "localhost",
   port: 4723,
   path: "/wd/hub/",
   protocol: "http",
-
-  // Framework you want to run your specs with.
-  // The following are supported: Mocha, Jasmine, and Cucumber
-  // see also: https://webdriver.io/docs/frameworks
-  //
-  // Make sure you have the wdio adapter package for the specific framework installed
-  // before running any tests.
   framework: "cucumber",
-  //
-  // The number of times to retry the entire specfile when it fails as a whole
-  // specFileRetries: 1,
-  //
-  // Delay in seconds between the spec file retry attempts
-  // specFileRetriesDelay: 0,
-  //
-  // Whether or not retried specfiles should be retried immediately or deferred to the end of the queue
-  // specFileRetriesDeferred: false,
-  //
-  // Test reporter for stdout.
-  // The only one supported by default is 'dot'
-  // see also: https://webdriver.io/docs/dot-reporter
-  // reporters: ["spec", ['allure', allure_config],
-    reporters: [['allure', allure_config]],
-
-  //   ['cucumberjs-json', {
-  //     jsonFolder: 'reporter/json/',
-  //     language: 'en',
-  //   },],
-  // ],
-
-  //
-  // If you are using Cucumber you need to specify the location of your step definitions.
+  reporters: [['allure', allure_config]],
   cucumberOpts: {
     // <string[]> (file/dir) require files before executing features
     require: ["./features/step-definitions/*.step.js"],
@@ -175,21 +74,30 @@ exports.config = {
     ignoreUndefinedDefinitions: false,
   },
 
-  //
-  // =====
+
   // Hooks
-  // =====
-  // WebdriverIO provides several hooks you can use to interfere with the test process in order to enhance
-  // it and to build services around it. You can either apply a single function or an array of
-  // methods to it. If one of them returns with a promise, WebdriverIO will wait until that promise got
-  // resolved to continue.
-  /**
-   * Gets executed once before all workers get launched.
-   * @param {Object} config wdio configuration object
-   * @param {Array.<Object>} capabilities list of capabilities details
-   */
-  // onPrepare: function (config, capabilities) {
+  // onPrepare: async function (config, capabilities) {
   // },
+
+  before: async function () {
+    await Integration.createRun();
+
+  },
+
+  afterScenario: async function (world,result,context) {
+    const testcaseID = world.pickle.tags.map((tag) => tag.name);
+    const originalString = testcaseID.toString();
+    const match = originalString.match(/\d+/);
+    const extractedNumber = match ? parseInt(match[0], 10) : null;
+    console.log('extractedNumber '+extractedNumber);
+    console.log('Status '+world.result.status.toLowerCase());
+    console.log('testcaseID '+data.id);
+
+    await Integration.afterMethodCall(world.result.status.toLowerCase(),extractedNumber);
+
+    await browser.deleteSession();
+  },
+
   /**
    * Gets executed before a worker process is spawned and can be used to initialise specific service
    * for that worker as well as modify runtime environments in an async fashion.
@@ -218,12 +126,7 @@ exports.config = {
    * @param {Array.<String>} specs        List of spec file paths that are to be run
    * @param {Object}         browser      instance of created browser/device session
    */
-  // before: async function () {
 
-  //   await import('expect-webdriverio');
-  //   global.wdioExpect = global.expect;
-  //   const chai = await import('chai');
-  //   global.expect = chai.expect;
   // },
   /**
    * Runs before a WebdriverIO command gets executed.
@@ -240,9 +143,7 @@ exports.config = {
    * @param {GherkinDocument.IFeature} feature  Cucumber feature object
    */
   beforeFeature: async function (uri, feature) {
-
     allureReporter.addStep("Starting Fetaure : " + feature.name);
-
     await browser.maximizeWindow();
   },
   /**
@@ -250,15 +151,34 @@ exports.config = {
    * Runs before a Cucumber Scenario.
    * @param {ITestCaseHookParameter} world world object containing information on pickle and test step
    */
-  beforeScenario: async function (world) {
+  beforeScenario: async function () {
 
-    await allureReporter.addFeature(world.name);
-  },
+    }
+
+
+    // if (setenv === 'browserstack') {
+    //   const browserCaps = 'browserStackAndroid';
+    //   console.log('Set Env is ' + setenv);
+    //   return driver.init(caps[browserCaps])
+     //   throw new Error(err);
+     // });
+  //     // const browserCaps = 'browserStackAndroid';
+  //     // console.log('Set Env is ' + setenv);
+  //     // driver = await remote(caps[browserCaps]);
+  //   } else if (setenv === 'local') {
+  //     const localCaps = 'appiumLocalCaps';
+  //     console.log('Set Env is ' + setenv);
+  //     driver = await remote(caps[localCaps]);
+  //     await driver.setTimeout({ 'implicit': 10000 });
+  //   } else {
+  //     throw new Error('Invalid environment');
+     //}
+  // },
   /**
    *
    * Runs before a Cucumber Step.
    * @param {Pickle.IPickleStep} step     step data
-   * @param {IPickle}            scenario scenario pickle
+   * @param {IPickle}            scenario scenario pickleadb d
    */
   // beforeStep: function (step, scenario) {
   // },
@@ -272,10 +192,10 @@ exports.config = {
    * @param {string}             result.error    error stack if scenario failed
    * @param {number}             result.duration duration of scenario in milliseconds
    */
-  afterStep: async function (step, scenario, result) {
-
-    cucumberJson.attach(await browser.takeScreenshot(), 'image/png');
-  },
+  // afterStep: async function (step, scenario, result) {
+  //
+  //  // cucumberJson.attach(await browser.takeScreenshot(), 'image/png');
+  // },
   /**
    *
    * Runs before a Cucumber Scenario.
@@ -283,10 +203,19 @@ exports.config = {
    * @param {Object}                 result results object containing scenario results
    * @param {boolean}                result.passed   true if scenario has passed
    * @param {string}                 result.error    error stack if scenario failed
-   * @param {number}                 result.duration duration of scenario in milliseconds
+   * @param {number}
+   * result.duration duration of scenario in milliseconds
    */
-  // afterScenario: function (world, result) {
-  // },
+
+
+//   if (driver && driver.sessionId) {
+//   try {
+//      driver.deleteSession();
+//   } catch (err) {
+//     console.error('Error quitting driver:', err);
+//   }
+// }
+
   /**
    *
    * Runs after a Cucumber Feature.
@@ -294,6 +223,7 @@ exports.config = {
    * @param {GherkinDocument.IFeature} feature  Cucumber feature object
    */
   // afterFeature: function (uri, feature) {
+  //
   // },
 
   /**
@@ -312,8 +242,20 @@ exports.config = {
    * @param {Array.<Object>} capabilities list of capabilities details
    * @param {Array.<String>} specs List of spec file paths that ran
    */
-  // after: function (result, capabilities, specs) {
-  // },
+
+  //after: async function (world,result, capabilities, specs) {
+ //   const testcaseID = world.pickle.tags.map((tag) => tag.name);
+ //    const originalString = testcaseID.toString();
+ //    const match = originalString.match(/\d+/);
+ //    const extractedNumber = match ? parseInt(match[0], 10) : null;
+
+
+    // console.log('extractedNumber '+extractedNumber);
+    // console.log('Status '+world.result.status.toLowerCase());
+    // console.log('testcaseID '+data.id);
+    // Integration.addCaseToTestRun(data.id,originalString,testcaseID);
+    // Integration.updateTestRunStatus();
+
   /**
    * Gets executed right after terminating the webdriver session.
    * @param {Object} config wdio configuration object
@@ -331,6 +273,7 @@ exports.config = {
    * @param {<Object>} results object containing test results
    */
   // onComplete: function(exitCode, config, capabilities, results) {
+  //   Integration.updateTestRunStatus();
   // },
   /**
    * Gets executed when a refresh happens.
@@ -339,4 +282,4 @@ exports.config = {
    */
   //onReload: function(oldSessionId, newSessionId) {
   //}
-};
+}
